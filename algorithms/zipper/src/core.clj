@@ -71,7 +71,7 @@
 
 (defn tree [{cur :cur upp :up :as z}]
   (if (not (empty? upp))
-    (tree (up z))
+    (recur (up z))
     cur))
 
 ;; Basic test
@@ -128,5 +128,66 @@
   (prop/for-all [kt (gen/not-empty scalar-tree-with-chosen-child)]
                 (let [[k t] kt]
                   (= t (get-cur (up (down (zipper t) k)))))))
+
+
+;; Performance comparisons
+
+;; (def width 10000)
+;; (criterium/quick-bench (zipmap (map (comp keyword str) (range width)) (range width)))
+;; (criterium/quick-bench (into {} (for [k (range width)] [(keyword (str k)) k])))
+;; (def r (range width))
+;; (criterium/quick-bench (zipmap (map (comp keyword str) r) r))
+;; (criterium/quick-bench (into {} (for [k r] [(keyword (str k)) k])))
+;; into quicker (guess b/c it using a transient datastruct internally)
+
+(defn make-deep-tree
+  "Make a tree with one path of length depth, followed by width branching."
+  [depth width]
+  (let [fm   (into {} (for [k (range width)] [(keyword (str k)) k]))
+        nest (fn [m] {:k m})]
+    (nth (iterate nest fm) depth)))
+
+(def depth 10)
+(def width 40)
+
+(def t-deep (make-deep-tree depth width))
+
+;; compare update-in inc all leaves with zipping down, inc all leaves, and
+;; zipping back up
+
+(def ks (vec (repeat depth :k)))
+(def ls (vec (map (comp keyword str) (range width))))
+(def addr (map (fn [l] (conj ks l)) ls))
+
+(comment
+  (time (reduce (fn [acc a] (update-in acc a inc)) t-deep addr)))
+
+(defn zip-down-inc-up [t depth width ls]
+  (let [z-deep (zipper t)
+        z-down (nth (iterate (fn [z] (down z :k)) z-deep) depth)
+        z-leaf (update-in (down z-down (first ls)) [:cur] inc)]
+    (tree (reduce (fn [acc s] (update-in (sideways acc s) [:cur] inc))
+                  z-leaf
+                  (rest ls)))))
+
+(comment
+  (time (zip-down-inc-up t-deep depth width)))
+
+(defn run-timings
+  ([depth width]
+     (run-timings depth width true true))
+  ([depth width run-zip? run-update?]
+     (let [t-deep (make-deep-tree depth width)
+           ks     (vec (repeat depth :k))
+           ls     (vec (map (comp keyword str) (range width)))
+           addr   (map (fn [l] (conj ks l)) ls)]
+       (if run-zip?
+         (nil? (time (zip-down-inc-up t-deep depth width ls))))
+       (if run-update?
+         (nil? (time (reduce (fn [acc a] (update-in acc a inc)) t-deep addr)))))))
+
+
+
+
 
 
