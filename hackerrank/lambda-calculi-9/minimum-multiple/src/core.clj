@@ -47,7 +47,7 @@
 (def BD 1000000007)
 
 (defn eval-pf [pf]
-  (reduce (fn [acc [p x]] (mod (* acc (long (Math/pow p x))) BD)) 1 pf))
+  (reduce (fn [acc [p x]] (mod (* acc (bigint (Math/pow p x))) BD)) 1N pf))
 
 (defn execute-fn [as]
   (let [pfs (map @prime-factorizations as)
@@ -56,7 +56,7 @@
 
 (defn execute-query [A [Q a b]]
   (if (= Q "Q")
-    (do (println (eval-pf (execute-fn (take (inc (- b a)) (drop a A)))))
+    (do (println (int (eval-pf (execute-fn (take (inc (- b a)) (drop a A))))))
         A)
     (update-in A [a] update-A-fn b)))
 
