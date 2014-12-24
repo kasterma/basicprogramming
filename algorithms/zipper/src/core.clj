@@ -4,6 +4,7 @@
             [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
+            [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.tools.trace :as trace]
             [criterium.core :as criterium]))
 
@@ -96,4 +97,36 @@
   (is (identical? (t1 :a) (get-cur (down z1 :a))))
   (is (not (identical? z1 (up (down z1 :a)))))
   (is (= z1 (up (down z1 :a)))))
+
+;; some random testing
+
+(def compound (fn [inner-gen]
+                (gen/not-empty (gen/map gen/keyword inner-gen))))
+(def scalar-tree (gen/recursive-gen compound gen/nat))
+
+(nth (gen/sample scalar-tree) 4)
+
+(gen/sample (gen/resize 10 scalar-tree) 2)
+
+(defspec downup-is-id
+  100
+  (prop/for-all [t (gen/not-empty scalar-tree)]
+                (let [k (first (keys t))]
+                  (= t (get-cur (up (down (zipper t) k)))))))
+
+(defn not-empty-tree->tree-with-child-chosen [t]
+  (gen/tuple (gen/elements (keys t)) (gen/return t)))
+
+(def scalar-tree-with-chosen-child
+  (gen/bind (gen/not-empty scalar-tree)
+            not-empty-tree->tree-with-child-chosen))
+
+(gen/sample scalar-tree-with-chosen-child)
+
+(defspec downup-rand-is-id
+  100
+  (prop/for-all [kt (gen/not-empty scalar-tree-with-chosen-child)]
+                (let [[k t] kt]
+                  (= t (get-cur (up (down (zipper t) k)))))))
+
 
