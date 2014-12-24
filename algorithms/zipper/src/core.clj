@@ -40,7 +40,7 @@
 
 (defn up [{:keys [cur up] :as z}]
   (let [[{:keys [key siblings] :as parent} & more-up]  up]
-    {:cur (assoc siblings key cur) :up (if more-up more-up (list))}))
+    {:cur (assoc siblings key cur) :up (if (not (nil? more-up)) more-up (list))}))
 
 (defn down [{:keys [cur up] :as z} child-key]
   {:cur (get cur child-key)
@@ -69,8 +69,8 @@
 (defn zipper [t]
   {:cur t :up (list)})
 
-(defn tree [{:keys [cur up] :as z}]
-  (if (not (empty? up))
+(defn tree [{cur :cur upp :up :as z}]
+  (if (not (empty? upp))
     (tree (up z))
     cur))
 
