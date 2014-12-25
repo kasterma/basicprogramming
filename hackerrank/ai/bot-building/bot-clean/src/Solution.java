@@ -36,6 +36,18 @@ public class Solution {
 			this.last = last;
 			this.len = len;
 		}
+		
+		static PathPlan makeInitialPath(List<Position> dirtyPositions, Position first, Position bot) {
+			List<Position> otherPos = new ArrayList<>(dirtyPositions);
+			otherPos.remove(first);
+			return new PathPlan(otherPos, first, first, dist(bot, first));
+		}
+		
+		static PathPlan makeExtendedPath(PathPlan current, Position newPos) {
+			List<Position> tv = new ArrayList<>(current.toVisit);
+			tv.remove(newPos);
+			return new PathPlan(tv, current.first, newPos, current.len + dist(current.last, newPos));
+		}
 	}
 	
 	static List<Position> getDirties(String [] grid) {
@@ -50,48 +62,38 @@ public class Solution {
 		return poss;
 	}
 	
-	static Optional<Position> getBest(Position bot, List<Position> dirtyLoc) {
-		PriorityQueue<PathPlan> queue =
-				new PriorityQueue<>(comparing(p -> p.len));
+	static Position getBest(Position bot, List<Position> dirtyLoc) {
+		PriorityQueue<PathPlan> queue = new PriorityQueue<>(comparing(p -> p.len));
+		
 		for(Position pos : dirtyLoc) {
-			List<Position> otherPos = new ArrayList<>(dirtyLoc);
-			otherPos.remove(pos);
-			queue.add(new PathPlan(otherPos, pos, pos, dist(bot, pos)));
+			queue.add(PathPlan.makeInitialPath(dirtyLoc, pos, bot));
 		}
-		while(!queue.isEmpty()) {
+		
+		while(true) {
+			assert(!queue.isEmpty());
 			PathPlan pp = queue.poll();
 			if(pp.toVisit.isEmpty()) {
-				return Optional.of(pp.first);
+				return pp.first;
 			}
 			for(Position pos: pp.toVisit) {
-				List<Position> tv = new ArrayList<>(pp.toVisit);
-				tv.remove(pos);
-				queue.add(new PathPlan(tv, pp.first, pos, pp.len + dist(pp.last, pos)));
+				queue.add(PathPlan.makeExtendedPath(pp, pos));
 			}
 		}
-		assert(false);
-		return Optional.empty();
 	}
 	
 	static void move(Position bot, String [] grid){
-		List<Position> dirtyLoc = getDirties(grid);
+		Position goal = getBest(bot, getDirties(grid));
 
-		Optional<Position> bestFirst = getBest(bot, dirtyLoc);
-		if (bestFirst.isPresent()) {
-			Position goal = bestFirst.get();
-			if(goal.row < bot.row) {
-				System.out.println("UP");
-			} else if (goal.row > bot.row) {
-				System.out.println("DOWN");
-			} else if (goal.col < bot.col) {
-				System.out.println("LEFT");
-			} else if (goal.col > bot.col) {
-				System.out.println("RIGHT");
-			} else {
-				System.out.println("CLEAN");
-			}
+		if(goal.row < bot.row) {
+			System.out.println("UP");
+		} else if (goal.row > bot.row) {
+			System.out.println("DOWN");
+		} else if (goal.col < bot.col) {
+			System.out.println("LEFT");
+		} else if (goal.col > bot.col) {
+			System.out.println("RIGHT");
 		} else {
-			System.out.println("No first step found");
+			System.out.println("CLEAN");
 		}
 	}
 	
