@@ -1,9 +1,6 @@
 import java.io.*;
 import java.util.*;
-import java.text.*;
-import java.math.*;
-import java.util.function.Function;
-import java.util.regex.*;
+import static java.util.Comparator.comparing;
 
 public class Solution {
 	final static String testCaseFile = "/Users/kasterma/projects/basicprogramming/hackerrank/ai/bot-building/bot-clean/testcase.txt";
@@ -39,10 +36,6 @@ public class Solution {
 			this.last = last;
 			this.len = len;
 		}
-		
-		int len() {
-			return len;
-		}
 	}
 	
 	static List<Position> getDirties(String [] grid) {
@@ -59,7 +52,7 @@ public class Solution {
 	
 	static Optional<Position> getBest(Position bot, List<Position> dirtyLoc) {
 		PriorityQueue<PathPlan> queue =
-				new PriorityQueue<>((pp1, pp2) -> pp1.len.compareTo(pp2.len));
+				new PriorityQueue<>(comparing(p -> p.len));
 		for(Position pos : dirtyLoc) {
 			List<Position> otherPos = new ArrayList<>(dirtyLoc);
 			otherPos.remove(pos);
