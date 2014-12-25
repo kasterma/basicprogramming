@@ -17,10 +17,10 @@
                 (make-priority-queue :len)
                 dirty-positions)]
     (loop [queue initial-queue]
-      (when (not (empty queue))
-        (let [[best-path new-queue]  (pop-best queue)]
-          (if (empty? (:toVisit best-path))
-            (:first best-path)
-            (recur (reduce (fn [pq pt] (add pq (make-entended-path best-path pt)))
-                           new-queue
-                           (:toVisit best-path)))))))))
+      (assert (not (empty queue)))
+      (let [[best-path new-queue]  (pop-best queue)]
+        (if (empty? (:toVisit best-path))
+          (:first best-path)
+          (recur (reduce (fn [pq pt] (add pq (make-entended-path best-path pt)))
+                         new-queue
+                         (:toVisit best-path))))))))
