@@ -7,13 +7,6 @@
             [clojure.tools.trace :as trace]
             [criterium.core :as criterium]))
 
-(defn get-int [] (long (Integer/parseInt (read-line))))
-(defn get-ints [] (map (fn [x] (long (Integer/parseInt x)))
-                       (clojure.string/split (read-line) #" ")))
-(defn main []
-  (let [n (get-int)]
-    (println n)))
-
 (def s1 [1 1 0 1 0 1 0 0])
 
 (defn shift-register-map
@@ -51,11 +44,12 @@
 
 ;; 2
 ;; 3
-#_(binding [*in* (java.io.BufferedReader. (java.io.FileReader. "testcase.txt"))]
-  (main))
+
+(defn toBitstring [s]
+  (map (comp read-string str) (seq s)))
 
 (defn prep-input [N s]
-  (partition N (map (comp read-string str) (seq s))))
+  (partition N (toBitstring s)))
 
 (prep-input 3 "101110")
 
@@ -94,3 +88,20 @@
 (decode testmessage 2 2 [[0 1] [1 1]])
 
 ;; testsolution: 11001
+
+(defn get-int [] (long (Integer/parseInt (read-line))))
+(defn get-ints [] (map (fn [x] (long (Integer/parseInt x)))
+                       (clojure.string/split (read-line) #" ")))
+(defn main []
+  (let [[Nd Kd]  (get-ints)
+        specsd   (doall (for [n (range Nd)] (toBitstring (read-line))))
+        [Ne Ke]  (get-ints)
+        specse   (doall (for [n (range Ne)] (toBitstring (read-line))))
+        message  (clojure.string/join (line-seq *in*))
+        d-mess   (decode message Kd Nd specsd)
+        e-mess   (encoding specse Ke d-mess)]
+    (println e-mess)))
+
+
+(binding [*in* (java.io.BufferedReader. (java.io.FileReader. "testcase.txt"))]
+  (main))
