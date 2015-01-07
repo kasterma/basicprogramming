@@ -3,7 +3,7 @@ package net.kasterma.zipper;
 import java.util.Optional;
 
 public class ImmutableList<T> {
-	class ListNode {
+	private class ListNode {
 		Optional<ListNode> next;
 		T val;
 		ListNode(T val) {
@@ -24,29 +24,33 @@ public class ImmutableList<T> {
 		T val() {
 			return val;
 		}
+		
+		public String toString() {
+			return val.toString() + ":" + next.toString();
+		}
 	}
 	
 	private final Optional<ListNode> node;
 	
-	ImmutableList() {
+	public ImmutableList() {
 		node = Optional.empty();
 	}
 	
-	ImmutableList(ListNode node) {
+	private ImmutableList(ListNode node) {
 		this.node = Optional.of(node);
 	}
 	
-	Boolean isEmpty() {
+	public Boolean isEmpty() {
 		return !node.isPresent();
 	}
 	
-	Optional<ImmutableList<T>> tail() {
+	public Optional<ImmutableList<T>> tail() {
 		if (node.isPresent() & node.get().hasNext())
 			return Optional.of(new ImmutableList<T>(node.get().getNext()));
 		return Optional.empty();
 	}
 	
-	Optional<T> head() {
+	public Optional<T> head() {
 		if (node.isPresent()) {
 			return Optional.of(node.get().val());
 		} else {
@@ -54,10 +58,18 @@ public class ImmutableList<T> {
 		}
 	}
 	
-	ImmutableList<T> add(T val) {
+	public ImmutableList<T> add(T val) {
 		if(node.isPresent())
 			return new ImmutableList<T>(new ListNode(node.get(), val));
 		else
 			return new ImmutableList<T>(new ListNode(val));
+	}
+	
+	public String toString() {
+		if(node.isPresent()) {
+			return node.toString();
+		} else {
+			return "EMPTY";
+		}
 	}
 }
