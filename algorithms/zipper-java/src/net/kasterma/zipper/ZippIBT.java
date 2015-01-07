@@ -49,4 +49,8 @@ public class ZippIBT {
 		else
 			return up().get().tree();
 	}
+	
+	ImmutableBinTree getCurrent() {
+		return current;
+	}
 }
