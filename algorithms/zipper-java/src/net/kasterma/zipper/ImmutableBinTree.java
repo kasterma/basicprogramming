@@ -105,4 +105,12 @@ public class ImmutableBinTree {
 		rv.append(")");
 		return rv.toString();
 	}
+
+	public Optional<ImmutableBinTree> getRight() {
+		return right;
+	}
+	
+	public Optional<ImmutableBinTree> getLeft() {
+		return left;
+	}
 }
