@@ -13,16 +13,20 @@
 (defn get-ints [] (map (fn [x] (long (Integer/parseInt x)))
                        (clojure.string/split (read-line) #" ")))
 
+(defn ct [n]
+  (/ (* n (inc n)) 2))
 
 ;;(trace/trace-vars step)
 
 (defn main []
   (let [T       (get-int)]
     (doseq [i (range T)]
-      (let [[N K] (get-ints)
-            xs    (map (fn [i] (< K i)) (get-ints))
-            parts (partition-by identity xs)]
-        (println [N K parts])))))
+      (let [[N K]      (get-ints)
+            xs         (map (fn [i] (< K i)) (get-ints))
+            small-ct   (apply +
+                         (map (comp ct count)
+                              (remove first (partition-by identity xs))))]
+        (println (- (ct N) small-ct))))))
 
 ;; 2
 ;; 3
